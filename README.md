@@ -8,11 +8,11 @@ Requisitos: Node.js ≥ 18 (usa `fetch` nativo). Sem dependências de runtime.
 
 ## Instalação
 
-Ainda não publicado no npm (aguardando definição da organização). Por enquanto, instale via git:
-
 ```bash
-npm install github:genera-ia/genera-id-js
+npm install @genera-id/node
 ```
+
+Enquanto a primeira versão não sai no npm, instale via git: `npm install github:genera-ia/genera-id-js`.
 
 ## Management API
 
