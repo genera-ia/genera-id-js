@@ -105,6 +105,24 @@ export interface CreateWebhookInput {
   events?: string[];
 }
 
+export type WebhookDeliveryStatus = "pending" | "succeeded" | "failed";
+
+/** Entrega persistida de um webhook (histórico de 30 dias; replay disponível). */
+export interface WebhookDeliveryRecord {
+  id: string;
+  eventType: string;
+  status: WebhookDeliveryStatus | string;
+  attempts: number;
+  lastStatusCode: number | null;
+  lastError: string | null;
+  createdAt: string;
+  deliveredAt: string | null;
+  /** Próxima tentativa agendada (apenas quando `status` é "pending"). */
+  nextAttemptAt: string | null;
+  /** O corpo exato enviado ao endpoint (byte a byte). */
+  payloadJson: string;
+}
+
 export interface User {
   id: string;
   userName: string | null;

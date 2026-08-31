@@ -15,6 +15,7 @@ import type {
   UpdateApplicationInput,
   UpdateTenantInput,
   User,
+  WebhookDeliveryRecord,
   WebhookEndpoint,
 } from "./types.js";
 
@@ -96,6 +97,16 @@ export class GeneraId {
       request(this.http, "POST", "/api/v1/webhooks", input),
     delete: (id: string): Promise<void> =>
       request(this.http, "DELETE", `/api/v1/webhooks/${encodeURIComponent(id)}`),
+    /** Histórico de entregas do endpoint (mais recente primeiro; retenção de 30 dias). */
+    listDeliveries: (id: string, query?: PageQuery): Promise<PagedResult<WebhookDeliveryRecord>> =>
+      request(this.http, "GET", `/api/v1/webhooks/${encodeURIComponent(id)}/deliveries`, undefined, {
+        page: query?.page,
+        pageSize: query?.pageSize,
+      }),
+    /** Reenvia a entrega (mesmo payload, byte a byte) — qualquer estado, inclusive sucesso. */
+    replay: (id: string, deliveryId: string): Promise<WebhookDeliveryRecord> =>
+      request(this.http, "POST",
+        `/api/v1/webhooks/${encodeURIComponent(id)}/deliveries/${encodeURIComponent(deliveryId)}/replay`),
   };
 
   readonly users = {

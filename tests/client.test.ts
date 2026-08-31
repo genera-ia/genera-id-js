@@ -69,6 +69,27 @@ describe("GeneraId", () => {
     expect(url.searchParams.get("pageSize")).toBe("50");
   });
 
+  it("monta as rotas de histórico e replay de webhooks", async () => {
+    const fetchMock = fetchMockOf(async () =>
+      jsonResponse(200, { items: [], page: 1, pageSize: 20, totalCount: 0 }),
+    );
+    await makeClient(fetchMock).webhooks.listDeliveries("wh-1", { page: 3 });
+
+    const url = new URL(String(fetchMock.mock.calls[0]![0]));
+    expect(url.pathname).toBe("/api/v1/webhooks/wh-1/deliveries");
+    expect(url.searchParams.get("page")).toBe("3");
+
+    const replayMock = fetchMockOf(async () =>
+      jsonResponse(202, { id: "d-1", eventType: "user.created", status: "pending", attempts: 1 }),
+    );
+    const replayed = await makeClient(replayMock).webhooks.replay("wh-1", "d-1");
+
+    const [replayUrl, init] = replayMock.mock.calls[0]!;
+    expect(new URL(String(replayUrl)).pathname).toBe("/api/v1/webhooks/wh-1/deliveries/d-1/replay");
+    expect(init!.method).toBe("POST");
+    expect(replayed.status).toBe("pending");
+  });
+
   it("trata 204 como void (revogação de chave)", async () => {
     const fetchMock = vi.fn(async () => new Response(null, { status: 204 }));
     await expect(
