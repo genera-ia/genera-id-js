@@ -34,10 +34,21 @@ export interface UpdateTenantInput {
   customDomain?: string;
 }
 
+export interface RotateKeysInput {
+  /**
+   * true = emergência (chave comprometida): aposenta as chaves antigas na hora
+   * — elas saem do JWKS e todo token assinado com elas passa a ser rejeitado
+   * (invalida sessões em curso). Ausente/false = rotação de rotina com graça.
+   */
+  revokeOldKeysNow?: boolean;
+}
+
 export interface KeyRotationResult {
   signingKeyThumbprint: string;
-  /** Quando as chaves antigas saem do JWKS (30 dias). */
+  /** Quando as chaves antigas saem do JWKS (30 dias; ou agora, se revogadas). */
   oldKeysRetireAt: string;
+  /** true quando as chaves antigas foram aposentadas imediatamente. */
+  oldKeysRevokedImmediately: boolean;
 }
 
 export interface ApiKey {

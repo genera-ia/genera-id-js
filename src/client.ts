@@ -11,6 +11,7 @@ import type {
   LoginAudit,
   PagedResult,
   PageQuery,
+  RotateKeysInput,
   Tenant,
   UpdateApplicationInput,
   UpdateTenantInput,
@@ -61,9 +62,14 @@ export class GeneraId {
     get: (): Promise<Tenant> => request(this.http, "GET", "/api/v1/tenant"),
     update: (input: UpdateTenantInput): Promise<Tenant> =>
       request(this.http, "PATCH", "/api/v1/tenant", input),
-    /** Rotaciona as chaves de assinatura; as antigas seguem no JWKS por 30 dias. */
-    rotateKeys: (): Promise<KeyRotationResult> =>
-      request(this.http, "POST", "/api/v1/tenant/keys/rotate"),
+    /**
+     * Rotaciona as chaves de assinatura; as antigas seguem no JWKS por 30 dias.
+     * Passe `{ revokeOldKeysNow: true }` (emergência, chave comprometida) para
+     * aposentá-las na hora — elas saem do JWKS e todo token assinado com elas
+     * passa a ser rejeitado.
+     */
+    rotateKeys: (input?: RotateKeysInput): Promise<KeyRotationResult> =>
+      request(this.http, "POST", "/api/v1/tenant/keys/rotate", input),
   };
 
   readonly apiKeys = {

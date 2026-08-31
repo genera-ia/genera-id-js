@@ -36,6 +36,8 @@ const { items } = await generaId.users.list({ query: "ana@acme" });
 
 // Rotação de chaves de assinatura (30 dias de graça no JWKS)
 await generaId.tenant.rotateKeys();
+// Emergência (chave comprometida): aposenta as antigas na hora
+await generaId.tenant.rotateKeys({ revokeOldKeysNow: true });
 ```
 
 Recursos: `tenant` (get/update/rotateKeys), `tenants` (chave de plataforma), `apiKeys`, `applications`, `webhooks`, `users`, `audits`. Erros viram `GeneraIdError` com `status` e `body`; `429`/`5xx` têm retry automático com backoff (configure com `maxRetries`).

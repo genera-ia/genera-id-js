@@ -57,6 +57,23 @@ describe("GeneraId", () => {
     expect(app.clientId).toBe("portal");
   });
 
+  it("rotateKeys envia revokeOldKeysNow só quando pedido", async () => {
+    const result = { signingKeyThumbprint: "AB", oldKeysRetireAt: "2026-01-01T00:00:00Z", oldKeysRevokedImmediately: true };
+
+    const emergencyMock = fetchMockOf(async () => jsonResponse(200, result));
+    const emergency = await makeClient(emergencyMock).tenant.rotateKeys({ revokeOldKeysNow: true });
+    const [url, init] = emergencyMock.mock.calls[0]!;
+    expect(String(url)).toBe("https://id.example.com/api/v1/tenant/keys/rotate");
+    expect(init!.method).toBe("POST");
+    expect(JSON.parse(String(init!.body)).revokeOldKeysNow).toBe(true);
+    expect(emergency.oldKeysRevokedImmediately).toBe(true);
+
+    // Sem argumento: rotação de rotina, sem corpo.
+    const routineMock = fetchMockOf(async () => jsonResponse(200, { ...result, oldKeysRevokedImmediately: false }));
+    await makeClient(routineMock).tenant.rotateKeys();
+    expect(routineMock.mock.calls[0]![1]!.body).toBeUndefined();
+  });
+
   it("monta a query de paginação de usuários", async () => {
     const fetchMock = fetchMockOf(async () =>
       jsonResponse(200, { items: [], page: 2, pageSize: 50, totalCount: 0 }),
