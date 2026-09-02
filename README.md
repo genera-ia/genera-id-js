@@ -82,4 +82,4 @@ npm test
 npm run build
 ```
 
-Licença: MIT.
+[Changelog](CHANGELOG.md) · Licença: MIT.
