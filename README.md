@@ -38,9 +38,18 @@ const { items } = await generaId.users.list({ query: "ana@acme" });
 await generaId.tenant.rotateKeys();
 // Emergência (chave comprometida): aposenta as antigas na hora
 await generaId.tenant.rotateKeys({ revokeOldKeysNow: true });
+
+// Organizações: workspaces dentro do tenant, com membros e convites
+const org = await generaId.organizations.create({ name: "Acme Corp" });
+await generaId.organizations.memberships.add(org.id, { userId, role: "owner" });
+const invitation = await generaId.organizations.invitations.create(org.id, {
+  email: "ana@acme.com",
+  role: "member",
+});
+// invitation.link aparece só na criação — use se não quiser depender só do e-mail
 ```
 
-Recursos: `tenant` (get/update/rotateKeys), `tenants` (chave de plataforma), `apiKeys`, `applications`, `webhooks`, `users`, `audits`. Erros viram `GeneraIdError` com `status` e `body`; `429`/`5xx` têm retry automático com backoff (configure com `maxRetries`).
+Recursos: `tenant` (get/update/rotateKeys), `tenants` (chave de plataforma), `apiKeys`, `applications`, `webhooks`, `organizations` (com `.memberships` e `.invitations`), `users` (com `.listOrganizations`), `audits`. Erros viram `GeneraIdError` com `status` e `body`; `429`/`5xx` têm retry automático com backoff (configure com `maxRetries`).
 
 ## Webhooks
 

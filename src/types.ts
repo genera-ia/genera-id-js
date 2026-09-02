@@ -156,6 +156,80 @@ export interface LoginAudit {
   createdAt: string;
 }
 
+/**
+ * Organização (workspace) dentro do tenant. Papéis de membership são strings
+ * opacas — o Genera ID só garante que nunca fica sem nenhum "owner".
+ */
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+  metadataJson: string | null;
+  createdByUserId: string | null;
+  createdAt: string;
+}
+
+export interface CreateOrganizationInput {
+  name: string;
+  /** Se omitido, derivado do nome. Único por tenant, imutável após criado. */
+  slug?: string;
+  metadataJson?: string;
+}
+
+export interface UpdateOrganizationInput {
+  name?: string;
+  metadataJson?: string;
+}
+
+export interface Membership {
+  id: string;
+  organizationId: string;
+  userId: string;
+  userEmail: string | null;
+  userDisplayName: string | null;
+  role: string;
+  createdAt: string;
+}
+
+export interface CreateMembershipInput {
+  userId: string;
+  role: string;
+}
+
+export interface UpdateMembershipInput {
+  role: string;
+}
+
+/** Organizações de um usuário, com o papel em cada uma — ver `users.listOrganizations`. */
+export interface UserOrganization {
+  organizationId: string;
+  organizationName: string;
+  organizationSlug: string;
+  role: string;
+  createdAt: string;
+}
+
+export type InvitationStatus = "pending" | "accepted" | "revoked" | "expired";
+
+export interface Invitation {
+  id: string;
+  organizationId: string;
+  email: string;
+  role: string;
+  status: InvitationStatus | string;
+  /** TTL de 7 dias a partir da criação. */
+  expiresAt: string;
+  createdAt: string;
+  acceptedAt: string | null;
+  /** Link de aceite — presente apenas na resposta da criação, uma única vez. */
+  link?: string | null;
+}
+
+export interface CreateInvitationInput {
+  email: string;
+  role: string;
+}
+
 export interface PagedResult<T> {
   items: T[];
   page: number;
