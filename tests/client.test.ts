@@ -141,4 +141,88 @@ describe("GeneraId", () => {
     await expect(makeClient(fetchMock, 2).users.get("abc")).rejects.toMatchObject({ status: 404 });
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
+
+  describe("organizations", () => {
+    it("cria organização e monta a listagem de memberships/invitations", async () => {
+      const fetchMock = fetchMockOf(async () =>
+        jsonResponse(201, { id: "org-1", name: "Acme Corp", slug: "acme-corp", metadataJson: null, createdByUserId: null, createdAt: "2026-01-01T00:00:00Z" }),
+      );
+      const org = await makeClient(fetchMock).organizations.create({ name: "Acme Corp" });
+      const [url, init] = fetchMock.mock.calls[0]!;
+      expect(String(url)).toBe("https://id.example.com/api/v1/organizations");
+      expect(init!.method).toBe("POST");
+      expect(org.slug).toBe("acme-corp");
+    });
+
+    it("monta as rotas e a query de memberships", async () => {
+      const fetchMock = fetchMockOf(async () =>
+        jsonResponse(200, { items: [], page: 1, pageSize: 50, totalCount: 0 }),
+      );
+      await makeClient(fetchMock).organizations.memberships.list("org-1", { page: 2 });
+      const url = new URL(String(fetchMock.mock.calls[0]![0]));
+      expect(url.pathname).toBe("/api/v1/organizations/org-1/memberships");
+      expect(url.searchParams.get("page")).toBe("2");
+
+      const addMock = fetchMockOf(async () =>
+        jsonResponse(201, { id: "m-1", organizationId: "org-1", userId: "u-1", userEmail: null, userDisplayName: null, role: "owner", createdAt: "2026-01-01T00:00:00Z" }),
+      );
+      const membership = await makeClient(addMock).organizations.memberships.add("org-1", { userId: "u-1", role: "owner" });
+      expect(membership.role).toBe("owner");
+
+      const updateMock = fetchMockOf(async () =>
+        jsonResponse(200, { id: "m-1", organizationId: "org-1", userId: "u-1", userEmail: null, userDisplayName: null, role: "admin", createdAt: "2026-01-01T00:00:00Z" }),
+      );
+      await makeClient(updateMock).organizations.memberships.updateRole("org-1", "u-1", { role: "admin" });
+      const [updateUrl, updateInit] = updateMock.mock.calls[0]!;
+      expect(String(updateUrl)).toBe("https://id.example.com/api/v1/organizations/org-1/memberships/u-1");
+      expect(updateInit!.method).toBe("PATCH");
+
+      const removeMock = vi.fn(async () => new Response(null, { status: 204 }));
+      await expect(
+        makeClient(removeMock).organizations.memberships.remove("org-1", "u-1"),
+      ).resolves.toBeUndefined();
+
+      // Remover o único owner é rejeitado pela API (409).
+      const conflictMock = vi.fn(async () => jsonResponse(409, { title: "A organização precisa de pelo menos um membro com papel 'owner'." }));
+      await expect(
+        makeClient(conflictMock).organizations.memberships.remove("org-1", "u-1"),
+      ).rejects.toMatchObject({ status: 409 });
+    });
+
+    it("cria convite (link aparece só na criação) e revoga", async () => {
+      const fetchMock = fetchMockOf(async () =>
+        jsonResponse(201, {
+          id: "inv-1", organizationId: "org-1", email: "ana@acme.com", role: "member",
+          status: "pending", expiresAt: "2026-01-08T00:00:00Z", createdAt: "2026-01-01T00:00:00Z",
+          acceptedAt: null, link: "https://acme.accounts.genera.ia.br/organizations/invitations/accept?token=abc",
+        }),
+      );
+      const invitation = await makeClient(fetchMock).organizations.invitations.create("org-1", {
+        email: "ana@acme.com",
+        role: "member",
+      });
+      expect(invitation.link).toContain("token=abc");
+
+      const revokeMock = fetchMockOf(async () =>
+        jsonResponse(200, {
+          id: "inv-1", organizationId: "org-1", email: "ana@acme.com", role: "member",
+          status: "revoked", expiresAt: "2026-01-08T00:00:00Z", createdAt: "2026-01-01T00:00:00Z", acceptedAt: null,
+        }),
+      );
+      const revoked = await makeClient(revokeMock).organizations.invitations.revoke("org-1", "inv-1");
+      const [revokeUrl, revokeInit] = revokeMock.mock.calls[0]!;
+      expect(String(revokeUrl)).toBe("https://id.example.com/api/v1/organizations/org-1/invitations/inv-1/revoke");
+      expect(revokeInit!.method).toBe("POST");
+      expect(revoked.status).toBe("revoked");
+    });
+
+    it("lista organizações do usuário", async () => {
+      const fetchMock = fetchMockOf(async () =>
+        jsonResponse(200, [{ organizationId: "org-1", organizationName: "Acme Corp", organizationSlug: "acme-corp", role: "owner", createdAt: "2026-01-01T00:00:00Z" }]),
+      );
+      const orgs = await makeClient(fetchMock).users.listOrganizations("u-1");
+      expect(String(fetchMock.mock.calls[0]![0])).toBe("https://id.example.com/api/v1/users/u-1/organizations");
+      expect(orgs[0]!.role).toBe("owner");
+    });
+  });
 });

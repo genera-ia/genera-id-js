@@ -1,6 +1,6 @@
 {
   "name": "@genera-id/node",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "SDK oficial do Genera ID para Node.js — Management API e verificação de webhooks.",
   "license": "MIT",
   "repository": {
