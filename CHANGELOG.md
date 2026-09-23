@@ -2,6 +2,15 @@
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/); versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.4.0] — 2026-09-23
+
+### Adicionado
+
+- `users.resetMfa(id)`: reset de MFA de quem perdeu o autenticador. Desliga o MFA, encerra as sessões no IdP e avisa os apps (back-channel logout) e o usuário (e-mail). Idempotente.
+- `Application.requireMfa` e `requireMfa` em `applications.create`/`update`: todo login no client exige segundo fator (no `update`, omitido não altera).
+- `Application.backChannelLogoutUri` e `backChannelLogoutUri` em `applications.create`/`update` (Back-Channel Logout 1.0, já suportado pela API desde 19/09).
+- Novos eventos de webhook documentados: `user.mfaEnabled`, `user.mfaDisabled`, `user.mfaReset`. O payload de usuário agora traz `twoFactorEnabled`.
+
 ## [0.3.0] — 2026-09-02
 
 ### Adicionado
@@ -23,6 +32,7 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/); 
 - Release inicial: cliente tipado da Management API (`tenant`, `tenants`, `apiKeys`, `applications`, `webhooks`, `users`, `audits`), com retry automático em `429`/`5xx` (backoff configurável via `maxRetries`) e erros tipados (`GeneraIdError`).
 - `verifyWebhookSignature` — verificação de assinatura de webhooks (HMAC-SHA256, comparação de tempo constante, tolerância de timestamp configurável).
 
+[0.4.0]: https://github.com/genera-ia/genera-id-js/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/genera-ia/genera-id-js/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/genera-ia/genera-id-js/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/genera-ia/genera-id-js/releases/tag/v0.1.0

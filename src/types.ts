@@ -76,6 +76,10 @@ export interface Application {
   consentType: string | null;
   redirectUris: string[];
   postLogoutRedirectUris: string[];
+  /** Endpoint que recebe o `logout_token` (Back-Channel Logout 1.0); `null` = não participa. */
+  backChannelLogoutUri: string | null;
+  /** Todo login neste client exige segundo fator (step-up / cadastro de MFA). */
+  requireMfa: boolean;
   /** Presente apenas na criação de um client confidential (`gid_cs_…`). */
   clientSecret?: string | null;
 }
@@ -90,6 +94,10 @@ export interface CreateApplicationInput {
   consentType?: ConsentType;
   redirectUris: string[];
   postLogoutRedirectUris?: string[];
+  /** Endpoint que recebe o `logout_token` quando a sessão do usuário no IdP termina. */
+  backChannelLogoutUri?: string;
+  /** Padrão: false. true = todo login neste client exige segundo fator. */
+  requireMfa?: boolean;
 }
 
 export interface UpdateApplicationInput {
@@ -97,6 +105,10 @@ export interface UpdateApplicationInput {
   consentType?: ConsentType;
   redirectUris: string[];
   postLogoutRedirectUris?: string[];
+  /** Omitido/vazio remove o endpoint. */
+  backChannelLogoutUri?: string;
+  /** Omitido = não altera. */
+  requireMfa?: boolean;
 }
 
 export interface WebhookEndpoint {
@@ -112,7 +124,10 @@ export interface WebhookEndpoint {
 export interface CreateWebhookInput {
   /** URL HTTPS absoluta. */
   url: string;
-  /** `user.created` | `user.updated` | `session.created`; vazio/omitido = todos. */
+  /**
+   * Ex.: `user.created`, `user.updated`, `session.created`, `user.mfaEnabled`,
+   * `user.mfaDisabled`, `user.mfaReset`, `organization.*`; vazio/omitido = todos.
+   */
   events?: string[];
 }
 

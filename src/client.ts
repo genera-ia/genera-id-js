@@ -137,6 +137,12 @@ export class GeneraId {
     /** Organizações do usuário no tenant, com o papel em cada uma. */
     listOrganizations: (id: string): Promise<UserOrganization[]> =>
       request(this.http, "GET", `/api/v1/users/${encodeURIComponent(id)}/organizations`),
+    /**
+     * Reset de MFA (usuário perdeu o autenticador): desliga o MFA, encerra as
+     * sessões no IdP e avisa os apps e o usuário. Idempotente.
+     */
+    resetMfa: (id: string): Promise<void> =>
+      request(this.http, "DELETE", `/api/v1/users/${encodeURIComponent(id)}/mfa`),
   };
 
   /**
