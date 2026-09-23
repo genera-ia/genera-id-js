@@ -225,4 +225,35 @@ describe("GeneraId", () => {
       expect(orgs[0]!.role).toBe("owner");
     });
   });
+
+  describe("MFA", () => {
+    it("resetMfa faz DELETE em /users/{id}/mfa e trata 204 como void", async () => {
+      const fetchMock = vi.fn(async () => new Response(null, { status: 204 }));
+      const result = await makeClient(fetchMock as unknown as typeof fetch).users.resetMfa("u-1");
+      const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+      expect(String(url)).toBe("https://id.example.com/api/v1/users/u-1/mfa");
+      expect(init.method).toBe("DELETE");
+      expect(result).toBeUndefined();
+    });
+
+    it("applications.create envia requireMfa e backChannelLogoutUri", async () => {
+      const fetchMock = fetchMockOf(async () =>
+        jsonResponse(201, {
+          clientId: "painel", redirectUris: [], postLogoutRedirectUris: [],
+          backChannelLogoutUri: "https://acme.com/bcl", requireMfa: true,
+        }),
+      );
+      const app = await makeClient(fetchMock).applications.create({
+        clientId: "painel",
+        displayName: "Painel",
+        redirectUris: ["https://acme.com/callback"],
+        backChannelLogoutUri: "https://acme.com/bcl",
+        requireMfa: true,
+      });
+      const body = JSON.parse(String(fetchMock.mock.calls[0]![1]!.body));
+      expect(body.requireMfa).toBe(true);
+      expect(body.backChannelLogoutUri).toBe("https://acme.com/bcl");
+      expect(app.requireMfa).toBe(true);
+    });
+  });
 });

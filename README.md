@@ -49,7 +49,7 @@ const invitation = await generaId.organizations.invitations.create(org.id, {
 // invitation.link aparece só na criação — use se não quiser depender só do e-mail
 ```
 
-Recursos: `tenant` (get/update/rotateKeys), `tenants` (chave de plataforma), `apiKeys`, `applications`, `webhooks`, `organizations` (com `.memberships` e `.invitations`), `users` (com `.listOrganizations`), `audits`. Erros viram `GeneraIdError` com `status` e `body`; `429`/`5xx` têm retry automático com backoff (configure com `maxRetries`).
+Recursos: `tenant` (get/update/rotateKeys), `tenants` (chave de plataforma), `apiKeys`, `applications`, `webhooks`, `organizations` (com `.memberships` e `.invitations`), `users` (com `.listOrganizations` e `.resetMfa`), `audits`. Erros viram `GeneraIdError` com `status` e `body`; `429`/`5xx` têm retry automático com backoff (configure com `maxRetries`).
 
 ## Webhooks
 
