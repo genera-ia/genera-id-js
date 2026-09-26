@@ -10,6 +10,8 @@ export interface Tenant {
   brandingJson: string | null;
   settingsJson: string | null;
   customDomain: string | null;
+  /** SSO corporativo (SAML) liberado para o tenant — ver `tenants.update` e `samlConnections`. */
+  ssoEnabled: boolean;
 }
 
 export interface CreateTenantInput {
@@ -32,6 +34,12 @@ export interface UpdateTenantInput {
   settingsJson?: string;
   /** Hostname próprio (ex.: `id.acme.com.br`); `""` remove; omitido não altera. */
   customDomain?: string;
+}
+
+/** Ajustes que só a plataforma faz (`tenants.update`, chave de plataforma). */
+export interface UpdateTenantPlatformInput {
+  /** Libera/bloqueia o SSO corporativo (SAML) — recurso comercial. */
+  ssoEnabled?: boolean;
 }
 
 export interface RotateKeysInput {
@@ -243,6 +251,91 @@ export interface Invitation {
 export interface CreateInvitationInput {
   email: string;
   role: string;
+}
+
+/** Domínio de e-mail atendido por uma conexão SAML (único por tenant). */
+export interface SamlDomain {
+  /** Minúsculo, sem "@" (ex.: `acme.com.br`). */
+  domain: string;
+  /** true = domínio só entra por SSO: sem login, recuperação, cadastro ou troca de senha. */
+  enforceSso: boolean;
+}
+
+export interface SamlCertificate {
+  thumbprint: string;
+  subject: string;
+  notAfter: string;
+  /** Preenchido quando o certificado saiu da metadata do IdP: continua aceito até esta data. */
+  retireAt: string | null;
+}
+
+/** O que se cadastra no IdP da empresa (Entra: Identifier/Reply URL; Okta: Audience URI/SSO URL). */
+export interface SamlServiceProvider {
+  entityId: string;
+  acsUrls: string[];
+  metadataUrl: string;
+}
+
+/** Campos do perfil que podem vir de um atributo SAML específico. */
+export type SamlAttributeField = "email" | "givenName" | "familyName" | "displayName";
+
+/** Conexão de SSO corporativo: o Genera ID como SP SAML diante do IdP de uma empresa. */
+export interface SamlConnection {
+  id: string;
+  name: string;
+  enabled: boolean;
+  idpEntityId: string;
+  idpSsoUrl: string;
+  /** Com URL, SSO URL e certificados são atualizados diariamente. */
+  idpMetadataUrl: string | null;
+  metadataRefreshedAt: string | null;
+  /** Último erro da atualização automática (null quando a última deu certo). */
+  metadataRefreshError: string | null;
+  idpCertificates: SamlCertificate[];
+  attributeMapping: Partial<Record<SamlAttributeField, string>> | null;
+  stableIdAttribute: string | null;
+  jitProvisioning: boolean;
+  trustIdpMfa: boolean;
+  organizationId: string | null;
+  defaultRole: string;
+  domains: SamlDomain[];
+  serviceProvider: SamlServiceProvider;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface SamlConnectionFields {
+  /** XML de metadata exportado do IdP. */
+  idpMetadataXml?: string;
+  /** HTTPS pública; atualizada todo dia (acompanha a rotação de certificado do IdP). */
+  idpMetadataUrl?: string;
+  idpEntityId?: string;
+  idpSsoUrl?: string;
+  /** PEM ou DER em base64 (só a parte pública). */
+  idpCertificates?: string[];
+  attributeMapping?: Partial<Record<SamlAttributeField, string>>;
+  /** Atributo usado como chave estável no lugar do NameID (ex.: objectidentifier no Entra). */
+  stableIdAttribute?: string;
+  /** Cria a conta no primeiro login (padrão true). Só vale para e-mails dos domínios da conexão. */
+  jitProvisioning?: boolean;
+  enabled?: boolean;
+  /** Aceita o MFA declarado pelo IdP como segundo fator (padrão false). */
+  trustIdpMfa?: boolean;
+  /** Quem entra pela conexão vira membro desta organização. */
+  organizationId?: string;
+  /** Papel da membership automática (padrão "member"). */
+  defaultRole?: string;
+}
+
+/** Dados do IdP: `idpMetadataUrl`, `idpMetadataXml` ou os três campos manuais. */
+export interface CreateSamlConnectionInput extends SamlConnectionFields {
+  name: string;
+  domains: SamlDomain[];
+}
+
+/** Campo omitido não muda; `""` remove `idpMetadataUrl`, `stableIdAttribute` e `organizationId`. */
+export interface UpdateSamlConnectionInput extends SamlConnectionFields {
+  name?: string;
 }
 
 export interface PagedResult<T> {

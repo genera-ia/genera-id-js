@@ -47,9 +47,18 @@ const invitation = await generaId.organizations.invitations.create(org.id, {
   role: "member",
 });
 // invitation.link aparece só na criação — use se não quiser depender só do e-mail
+
+// SSO corporativo (SAML): usuários da empresa entram pelo Entra ID/Okta/Google dela
+const sso = await generaId.samlConnections.create({
+  name: "Acme (Entra ID)",
+  idpMetadataUrl: "https://login.microsoftonline.com/<tenant>/federationmetadata/2007-06/federationmetadata.xml",
+  domains: [{ domain: "acme.com.br", enforceSso: true }],
+  organizationId: org.id, // quem entra pela conexão vira membro
+});
+// cadastre no IdP: sso.serviceProvider.entityId e sso.serviceProvider.acsUrls
 ```
 
-Recursos: `tenant` (get/update/rotateKeys), `tenants` (chave de plataforma), `apiKeys`, `applications`, `webhooks`, `organizations` (com `.memberships` e `.invitations`), `users` (com `.listOrganizations` e `.resetMfa`), `audits`. Erros viram `GeneraIdError` com `status` e `body`; `429`/`5xx` têm retry automático com backoff (configure com `maxRetries`).
+Recursos: `tenant` (get/update/rotateKeys), `tenants` (chave de plataforma), `apiKeys`, `applications`, `webhooks`, `organizations` (com `.memberships` e `.invitations`), `samlConnections` (SSO corporativo; exige o recurso liberado no tenant), `users` (com `.listOrganizations` e `.resetMfa`), `audits`. Com a chave de plataforma, `tenants.update(id, { ssoEnabled })` libera o SSO corporativo. Erros viram `GeneraIdError` com `status` e `body`; `429`/`5xx` têm retry automático com backoff (configure com `maxRetries`).
 
 ## Webhooks
 
