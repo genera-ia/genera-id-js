@@ -284,8 +284,10 @@ export interface SamlConnection {
   id: string;
   name: string;
   enabled: boolean;
-  idpEntityId: string;
-  idpSsoUrl: string;
+  /** false enquanto a conexão aguarda os dados do IdP (fica fora de qualquer login). */
+  idpConfigured: boolean;
+  idpEntityId: string | null;
+  idpSsoUrl: string | null;
   /** Com URL, SSO URL e certificados são atualizados diariamente. */
   idpMetadataUrl: string | null;
   metadataRefreshedAt: string | null;
@@ -327,7 +329,11 @@ interface SamlConnectionFields {
   defaultRole?: string;
 }
 
-/** Dados do IdP: `idpMetadataUrl`, `idpMetadataXml` ou os três campos manuais. */
+/**
+ * Dados do IdP: `idpMetadataUrl`, `idpMetadataXml` ou os três campos manuais —
+ * ou nenhum: a conexão nasce pendente (`idpConfigured: false`) e já devolve o
+ * `serviceProvider` para cadastrar no IdP; a metadata vem depois, no `update`.
+ */
 export interface CreateSamlConnectionInput extends SamlConnectionFields {
   name: string;
   domains: SamlDomain[];

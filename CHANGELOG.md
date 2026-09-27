@@ -6,7 +6,7 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/); 
 
 ### Adicionado
 
-- Recurso `samlConnections` (SSO corporativo, SAML): `list`/`create`/`get`/`update`/`replaceDomains`/`delete`. A conexão traz `serviceProvider` (Entity ID, ACS e metadata para cadastrar no IdP), domínios com `enforceSso`, `idpMetadataUrl` com atualização diária e certificados com `retireAt` durante a rotação, `trustIdpMfa`, `organizationId`/`defaultRole` (membership automática), `jitProvisioning`, `attributeMapping` e `stableIdAttribute`.
+- Recurso `samlConnections` (SSO corporativo, SAML): `list`/`create`/`get`/`update`/`replaceDomains`/`delete`. A conexão traz `serviceProvider` (Entity ID, ACS e metadata para cadastrar no IdP), domínios com `enforceSso`, `idpMetadataUrl` com atualização diária e certificados com `retireAt` durante a rotação, `trustIdpMfa`, `organizationId`/`defaultRole` (membership automática), `jitProvisioning`, `attributeMapping` e `stableIdAttribute`. A conexão pode ser criada sem os dados do IdP (`idpConfigured: false`), recebendo a metadata depois.
 - `tenants.update(id, { ssoEnabled })` (chave de plataforma) e `Tenant.ssoEnabled`.
 - Novos eventos de webhook documentados: `samlConnection.created`, `samlConnection.updated`, `samlConnection.deleted`.
 

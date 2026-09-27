@@ -259,7 +259,7 @@ describe("GeneraId", () => {
 
   describe("samlConnections", () => {
     const connection = {
-      id: "c-1", name: "Acme", enabled: true,
+      id: "c-1", name: "Acme", enabled: true, idpConfigured: true,
       idpEntityId: "https://sts.windows.net/abc/", idpSsoUrl: "https://login.microsoftonline.com/abc/saml2",
       idpMetadataUrl: "https://login.microsoftonline.com/abc/federationmetadata.xml",
       metadataRefreshedAt: null, metadataRefreshError: null,
