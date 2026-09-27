@@ -256,4 +256,74 @@ describe("GeneraId", () => {
       expect(app.requireMfa).toBe(true);
     });
   });
+
+  describe("samlConnections", () => {
+    const connection = {
+      id: "c-1", name: "Acme", enabled: true, idpConfigured: true,
+      idpEntityId: "https://sts.windows.net/abc/", idpSsoUrl: "https://login.microsoftonline.com/abc/saml2",
+      idpMetadataUrl: "https://login.microsoftonline.com/abc/federationmetadata.xml",
+      metadataRefreshedAt: null, metadataRefreshError: null,
+      idpCertificates: [{ thumbprint: "AB", subject: "CN=idp", notAfter: "2030-01-01T00:00:00Z", retireAt: null }],
+      attributeMapping: null, stableIdAttribute: null, jitProvisioning: true, trustIdpMfa: false,
+      organizationId: null, defaultRole: "member",
+      domains: [{ domain: "acme.com.br", enforceSso: true }],
+      serviceProvider: {
+        entityId: "https://acme.accounts.genera.ia.br/saml/c-1",
+        acsUrls: ["https://acme.accounts.genera.ia.br/saml/c-1/acs"],
+        metadataUrl: "https://acme.accounts.genera.ia.br/saml/c-1/metadata",
+      },
+      createdAt: "2026-09-26T00:00:00Z", updatedAt: "2026-09-26T00:00:00Z",
+    };
+
+    it("cria a conexão e devolve o que cadastrar no IdP", async () => {
+      const fetchMock = fetchMockOf(async () => jsonResponse(201, connection));
+      const created = await makeClient(fetchMock).samlConnections.create({
+        name: "Acme",
+        idpMetadataUrl: "https://login.microsoftonline.com/abc/federationmetadata.xml",
+        domains: [{ domain: "acme.com.br", enforceSso: true }],
+      });
+      const [url, init] = fetchMock.mock.calls[0]!;
+      expect(String(url)).toBe("https://id.example.com/api/v1/saml-connections");
+      expect(init!.method).toBe("POST");
+      expect(JSON.parse(String(init!.body)).domains[0].enforceSso).toBe(true);
+      expect(created.serviceProvider.acsUrls[0]).toBe("https://acme.accounts.genera.ia.br/saml/c-1/acs");
+    });
+
+    it("monta as rotas de update, domínios e exclusão", async () => {
+      const updateMock = fetchMockOf(async () => jsonResponse(200, connection));
+      await makeClient(updateMock).samlConnections.update("c-1", { trustIdpMfa: true, organizationId: "" });
+      const [updateUrl, updateInit] = updateMock.mock.calls[0]!;
+      expect(String(updateUrl)).toBe("https://id.example.com/api/v1/saml-connections/c-1");
+      expect(updateInit!.method).toBe("PATCH");
+      expect(JSON.parse(String(updateInit!.body))).toEqual({ trustIdpMfa: true, organizationId: "" });
+
+      const domainsMock = fetchMockOf(async () => jsonResponse(200, connection));
+      await makeClient(domainsMock).samlConnections.replaceDomains("c-1", [{ domain: "acme.com", enforceSso: false }]);
+      const [domainsUrl, domainsInit] = domainsMock.mock.calls[0]!;
+      expect(String(domainsUrl)).toBe("https://id.example.com/api/v1/saml-connections/c-1/domains");
+      expect(domainsInit!.method).toBe("PUT");
+      expect(JSON.parse(String(domainsInit!.body))).toEqual({ domains: [{ domain: "acme.com", enforceSso: false }] });
+
+      const deleteMock = fetchMockOf(async () => new Response(null, { status: 204 }));
+      await expect(makeClient(deleteMock).samlConnections.delete("c-1")).resolves.toBeUndefined();
+      expect(deleteMock.mock.calls[0]![1]!.method).toBe("DELETE");
+    });
+
+    it("tenant sem o recurso liberado recebe GeneraIdError 403", async () => {
+      const fetchMock = fetchMockOf(async () =>
+        jsonResponse(403, { title: "SSO corporativo (SAML) não está habilitado para este tenant." }));
+      await expect(makeClient(fetchMock).samlConnections.list()).rejects.toMatchObject({ status: 403 });
+    });
+
+    it("tenants.update libera o SSO pela plataforma", async () => {
+      const fetchMock = fetchMockOf(async () =>
+        jsonResponse(200, { id: "t-1", slug: "acme", name: "Acme", status: "active", createdAt: "2026-01-01T00:00:00Z",
+          brandingJson: null, settingsJson: null, customDomain: null, ssoEnabled: true }));
+      const tenant = await makeClient(fetchMock).tenants.update("t-1", { ssoEnabled: true });
+      const [url, init] = fetchMock.mock.calls[0]!;
+      expect(String(url)).toBe("https://id.example.com/api/v1/tenants/t-1");
+      expect(init!.method).toBe("PATCH");
+      expect(tenant.ssoEnabled).toBe(true);
+    });
+  });
 });

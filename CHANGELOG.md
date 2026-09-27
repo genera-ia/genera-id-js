@@ -2,6 +2,14 @@
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/); versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.5.0] — 2026-09-27
+
+### Adicionado
+
+- Recurso `samlConnections` (SSO corporativo, SAML): `list`/`create`/`get`/`update`/`replaceDomains`/`delete`. A conexão traz `serviceProvider` (Entity ID, ACS e metadata para cadastrar no IdP), domínios com `enforceSso`, `idpMetadataUrl` com atualização diária e certificados com `retireAt` durante a rotação, `trustIdpMfa`, `organizationId`/`defaultRole` (membership automática), `jitProvisioning`, `attributeMapping` e `stableIdAttribute`. A conexão pode ser criada sem os dados do IdP (`idpConfigured: false`), recebendo a metadata depois.
+- `tenants.update(id, { ssoEnabled })` (chave de plataforma) e `Tenant.ssoEnabled`.
+- Novos eventos de webhook documentados: `samlConnection.created`, `samlConnection.updated`, `samlConnection.deleted`.
+
 ## [0.4.0] — 2026-09-23
 
 ### Adicionado
@@ -32,6 +40,7 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/); 
 - Release inicial: cliente tipado da Management API (`tenant`, `tenants`, `apiKeys`, `applications`, `webhooks`, `users`, `audits`), com retry automático em `429`/`5xx` (backoff configurável via `maxRetries`) e erros tipados (`GeneraIdError`).
 - `verifyWebhookSignature` — verificação de assinatura de webhooks (HMAC-SHA256, comparação de tempo constante, tolerância de timestamp configurável).
 
+[0.5.0]: https://github.com/genera-ia/genera-id-js/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/genera-ia/genera-id-js/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/genera-ia/genera-id-js/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/genera-ia/genera-id-js/compare/v0.1.0...v0.2.0

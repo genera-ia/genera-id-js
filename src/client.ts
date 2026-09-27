@@ -19,11 +19,16 @@ import type {
   PagedResult,
   PageQuery,
   RotateKeysInput,
+  SamlConnection,
+  SamlDomain,
+  CreateSamlConnectionInput,
+  UpdateSamlConnectionInput,
   Tenant,
   UpdateApplicationInput,
   UpdateMembershipInput,
   UpdateOrganizationInput,
   UpdateTenantInput,
+  UpdateTenantPlatformInput,
   User,
   UserOrganization,
   WebhookDeliveryRecord,
@@ -65,6 +70,9 @@ export class GeneraId {
     create: (input: CreateTenantInput): Promise<CreatedTenant> =>
       request(this.http, "POST", "/api/v1/tenants", input),
     list: (): Promise<Tenant[]> => request(this.http, "GET", "/api/v1/tenants"),
+    /** Ajustes que só a plataforma faz — ex.: `{ ssoEnabled: true }` libera o SSO corporativo. */
+    update: (id: string, input: UpdateTenantPlatformInput): Promise<Tenant> =>
+      request(this.http, "PATCH", `/api/v1/tenants/${encodeURIComponent(id)}`, input),
   };
 
   /** O próprio tenant da chave `gid_sk_…`. */
@@ -213,6 +221,27 @@ export class GeneraId {
           `/api/v1/organizations/${encodeURIComponent(organizationId)}` +
           `/invitations/${encodeURIComponent(invitationId)}/revoke`),
     },
+  };
+
+  /**
+   * SSO corporativo (SAML): usuários das empresas-clientes entram pelo IdP
+   * delas (Entra ID, Okta, Google Workspace…). Exige o recurso liberado no
+   * tenant (`403` sem ele). Cadastre no IdP o `serviceProvider` da resposta.
+   */
+  readonly samlConnections = {
+    list: (): Promise<SamlConnection[]> => request(this.http, "GET", "/api/v1/saml-connections"),
+    create: (input: CreateSamlConnectionInput): Promise<SamlConnection> =>
+      request(this.http, "POST", "/api/v1/saml-connections", input),
+    get: (id: string): Promise<SamlConnection> =>
+      request(this.http, "GET", `/api/v1/saml-connections/${encodeURIComponent(id)}`),
+    update: (id: string, input: UpdateSamlConnectionInput): Promise<SamlConnection> =>
+      request(this.http, "PATCH", `/api/v1/saml-connections/${encodeURIComponent(id)}`, input),
+    /** Substitui a lista de domínios (um domínio pertence a no máximo uma conexão do tenant). */
+    replaceDomains: (id: string, domains: SamlDomain[]): Promise<SamlConnection> =>
+      request(this.http, "PUT", `/api/v1/saml-connections/${encodeURIComponent(id)}/domains`, { domains }),
+    /** Remove a conexão e os vínculos de login com o IdP; os usuários continuam existindo. */
+    delete: (id: string): Promise<void> =>
+      request(this.http, "DELETE", `/api/v1/saml-connections/${encodeURIComponent(id)}`),
   };
 
   readonly audits = {
