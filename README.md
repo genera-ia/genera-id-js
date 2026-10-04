@@ -6,13 +6,13 @@ SDK oficial do [Genera ID](https://genera-id.onrender.com/docs) para Node.js: cl
 
 Requisitos: Node.js ≥ 18 (usa `fetch` nativo). Sem dependências de runtime.
 
+Para usar a Management API você precisa de um tenant e da chave `gid_sk_…` dele. O Genera ID não tem cadastro self-service: os tenants são criados pela equipe da Genera — [fale com vendas](mailto:contato@genera.ia.br?subject=Genera%20ID). A chave aparece uma única vez na criação; depois, gere outras no dashboard ou com `apiKeys.create`.
+
 ## Instalação
 
 ```bash
 npm install @genera-id/node
 ```
-
-Enquanto a primeira versão não sai no npm, instale via git: `npm install github:genera-ia/genera-id-js`.
 
 ## Management API
 
