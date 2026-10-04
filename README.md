@@ -14,8 +14,6 @@ Para usar a Management API você precisa de um tenant e da chave `gid_sk_…` de
 npm install @genera-id/node
 ```
 
-Enquanto a primeira versão não sai no npm, instale via git: `npm install github:genera-ia/genera-id-js`.
-
 ## Management API
 
 ```ts
