@@ -2,6 +2,12 @@
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/); versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.5.1] — 2026-10-04
+
+### Documentação
+
+- README: explica de onde vem a chave `gid_sk_…` — o Genera ID não tem mais cadastro self-service, e os tenants são criados pela equipe da Genera ([contato@genera.ia.br](mailto:contato@genera.ia.br)). Sai o aviso de que o pacote ainda não estava publicado. Nenhuma mudança de código.
+
 ## [0.5.0] — 2026-09-27
 
 ### Adicionado
@@ -40,6 +46,7 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/); 
 - Release inicial: cliente tipado da Management API (`tenant`, `tenants`, `apiKeys`, `applications`, `webhooks`, `users`, `audits`), com retry automático em `429`/`5xx` (backoff configurável via `maxRetries`) e erros tipados (`GeneraIdError`).
 - `verifyWebhookSignature` — verificação de assinatura de webhooks (HMAC-SHA256, comparação de tempo constante, tolerância de timestamp configurável).
 
+[0.5.1]: https://github.com/genera-ia/genera-id-js/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/genera-ia/genera-id-js/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/genera-ia/genera-id-js/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/genera-ia/genera-id-js/compare/v0.2.0...v0.3.0
