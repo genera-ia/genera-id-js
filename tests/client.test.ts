@@ -216,6 +216,23 @@ describe("GeneraId", () => {
       expect(revoked.status).toBe("revoked");
     });
 
+    it("convite leva a application de destino no corpo e na resposta", async () => {
+      const fetchMock = fetchMockOf(async () =>
+        jsonResponse(201, {
+          id: "inv-2", organizationId: "org-1", email: "ana@acme.com", role: "member",
+          status: "pending", expiresAt: "2026-01-08T00:00:00Z", createdAt: "2026-01-01T00:00:00Z",
+          acceptedAt: null, applicationClientId: "portal", link: "https://acme.accounts.genera.ia.br/x",
+        }),
+      );
+      const invitation = await makeClient(fetchMock).organizations.invitations.create("org-1", {
+        email: "ana@acme.com",
+        role: "member",
+        applicationClientId: "portal",
+      });
+      expect(JSON.parse(String(fetchMock.mock.calls[0]![1]!.body)).applicationClientId).toBe("portal");
+      expect(invitation.applicationClientId).toBe("portal");
+    });
+
     it("lista organizações do usuário", async () => {
       const fetchMock = fetchMockOf(async () =>
         jsonResponse(200, [{ organizationId: "org-1", organizationName: "Acme Corp", organizationSlug: "acme-corp", role: "owner", createdAt: "2026-01-01T00:00:00Z" }]),
