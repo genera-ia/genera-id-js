@@ -45,6 +45,7 @@ await generaId.organizations.memberships.add(org.id, { userId, role: "owner" });
 const invitation = await generaId.organizations.invitations.create(org.id, {
   email: "ana@acme.com",
   role: "member",
+  applicationClientId: "meu-app", // opcional: depois de aceitar, "Continuar para" o app
 });
 // invitation.link aparece só na criação — use se não quiser depender só do e-mail
 

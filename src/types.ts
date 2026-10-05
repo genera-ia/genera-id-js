@@ -244,6 +244,8 @@ export interface Invitation {
   expiresAt: string;
   createdAt: string;
   acceptedAt: string | null;
+  /** client_id da application para onde o convidado segue depois de aceitar; null leva à conta. */
+  applicationClientId: string | null;
   /** Link de aceite — presente apenas na resposta da criação, uma única vez. */
   link?: string | null;
 }
@@ -251,6 +253,11 @@ export interface Invitation {
 export interface CreateInvitationInput {
   email: string;
   role: string;
+  /**
+   * client_id de uma application do tenant: depois de aceitar, a tela oferece
+   * "Continuar para" ela. Omitido, o botão leva à conta no Genera ID.
+   */
+  applicationClientId?: string;
 }
 
 /** Domínio de e-mail atendido por uma conexão SAML (único por tenant). */
